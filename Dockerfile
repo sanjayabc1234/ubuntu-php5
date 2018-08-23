@@ -12,8 +12,7 @@ RUN apt-get update
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get install -y zip unzip
-RUN apt-get install -y nano
+RUN apt-get install -y build-essential curl zip unzip nano
 
 RUN apt-get install apache2 libapache2-mod-php5 -y
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
@@ -24,29 +23,14 @@ RUN sed -i '30 a \ \n\t# Added automatically using dockerfile\n\t<IfModule mod_d
 RUN a2enmod rewrite
 RUN service apache2 restart
 
-RUN apt-get install -y php-pear
-RUN apt-get install -y php5
-RUN apt-get install -y php5-cgi
-RUN apt-get install -y php5-cli
-RUN apt-get install -y php5-common
-RUN apt-get install -y php5-curl
-RUN apt-get install -y php5-dev
-RUN apt-get install -y php5-gd
-RUN apt-get install -y php5-imap
-RUN apt-get install -y php5-json
-RUN apt-get install -y php5-mcrypt
-RUN apt-get install -y php5-mysql
-RUN apt-get install -y libsasl2-dev
-RUN apt-get install -y libpcre3-dev
+RUN apt-get install -y php5 php5-cli php5-common php5-curl php5-dev php5-gd php5-imap php5-json php5-mcrypt php5-mysql php-pear pkg-config libssl-dev libsslcommon2-dev
 
-RUN pecl install mongodb
-
-RUN apt-get install php5-mongo
+RUN pecl install mongo
 
 RUN php5enmod mcrypt
 
-RUN echo "extension=mongodb.so" >> /etc/php5/cli/php.ini
-RUN echo "extension=mongodb.so" >> /etc/php5/apache2/php.ini
+RUN echo "extension=mongo.so" >> /etc/php5/cli/php.ini
+RUN echo "extension=mongo.so" >> /etc/php5/apache2/php.ini
 
 COPY index.php /var/www/html/
 COPY run-lamp.sh /usr/sbin/
@@ -57,6 +41,7 @@ VOLUME /var/log/httpd
 VOLUME /etc/apache2
 
 RUN echo "root:ser_123" | chpasswd
+RUN service apache2 restart
 
 RUN groupadd dev
 RUN useradd -d /home/dev -u 1000 -g dev dev
@@ -64,9 +49,3 @@ RUN echo 'dev:ser_123' | chpasswd
 RUN usermod -aG sudo dev
 USER dev
 WORKDIR /home/dev
-
-
-#docker build . -t ubuntu-php7:16.04
-#RUN chown -R www-data:www-data /var/www/html
-#docker run -it -p 8080:80 -v /home/docker:/var/www/html/ ubuntu-php7:16.04 bash
-#https://www.jujens.eu/posts/en/2017/Jul/02/docker-userns-remap/
